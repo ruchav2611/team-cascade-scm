@@ -1,0 +1,10 @@
+definition_version: "2"
+entities:
+  team_cascade_app:
+    type: streamlit
+    identifier:
+      name: SCM.ONT.TEAM_CASCADE_SCM_APP
+    stage: SCM.ONT.STREAMLIT_STAGE
+    query_warehouse: COMPUTE_WH
+    main_file: streamlit/app.py
+    title: "Team Cascade — N-Tier Risk Intelligence"
