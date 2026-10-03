@@ -5,14 +5,57 @@ from snowflake.snowpark.context import get_active_session
 
 st.set_page_config(page_title="Team Cascade — SCM Risk Portal", layout="wide")
 
+# Initialize Session State for Authentication
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+# ---------------------------------------------------------
+# UNIVERSAL LOGIN SCREEN
+# ---------------------------------------------------------
+if not st.session_state.authenticated:
+    st.title("🛡️ Team Cascade — SCM Risk Portal")
+    st.subheader("Enterprise System Portal Login")
+    st.caption("Please enter your corporate credentials to access the application.")
+    
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        username = st.text_input("Username", value="admin")
+        password = st.text_input("Password", type="password", value="password123")
+        login_btn = st.button("Sign In", type="primary", use_container_width=True)
+        
+        if login_btn:
+            if username == "admin" and password == "password123":
+                st.session_state.authenticated = True
+                st.rerun()
+            else:
+                st.error("Invalid credentials. Use 'admin' / 'password123'.")
+                
+    with col2:
+        st.info("""
+        **Demo Access Credentials:**
+        * **Username:** `admin`
+        * **Password:** `password123`
+        
+        *Note: This login gates persona views and governed Cortex analytical features for system evaluation.*
+        """)
+    st.stop()
+
+# ---------------------------------------------------------
+# AUTHENTICATED APPLICATION
+# ---------------------------------------------------------
 @st.cache_resource
 def init_session():
     return get_active_session()
 
 session = init_session()
 
-st.title("🛡️ Team Cascade — N-Tier Supply Chain Risk Control")
+# Title Header
+st.title("🛡️️ Team Cascade — N-Tier Supply Chain Risk Control")
 st.caption("Governed, ontology-grounded risk detection & multi-tier cascade impact analytics.")
+
+# Sidebar Persona Selector & Profile
+st.sidebar.markdown("### 👤 User Profile")
+st.sidebar.write("Logged in as: **System Admin (John Smith)**")
 
 persona = st.sidebar.selectbox(
     "Select Operating Persona",
@@ -20,9 +63,14 @@ persona = st.sidebar.selectbox(
     help="Filters emphasis and metrics based on persona objectives."
 )
 
-st.sidebar.markdown("---")
 st.sidebar.markdown(f"**Active Persona:** `{persona}`")
+st.sidebar.markdown("---")
 
+if st.sidebar.button("🔒 Sign Out", use_container_width=True):
+    st.session_state.authenticated = False
+    st.rerun()
+
+# Main Navigation Tabs
 tab_qa, tab_analytics, tab_alerts = st.tabs([
     "💬 Semantic Assistant & Contract Search", 
     "📊 Risk Heatmap & Cascade Analytics", 
@@ -116,7 +164,6 @@ with tab_analytics:
         st.markdown("---")
         st.markdown("### Supplier Risk Exposure Ranking")
         
-        # Fixed bar_chart call compatible with Snowflake's Streamlit version
         chart_data = df_raw.set_index("ROOT_SUPPLIER_NAME")[["ROW_RISK_SCORE"]]
         st.bar_chart(chart_data)
         
