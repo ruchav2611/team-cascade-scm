@@ -30,42 +30,63 @@ tab_qa, tab_analytics, tab_alerts = st.tabs([
 ])
 
 # ---------------------------------------------------------
-# TAB 1: Semantic Q&A & Cortex Search
+# TAB 1: Semantic Q&A + Cortex LLM Synthesis
 # ---------------------------------------------------------
 with tab_qa:
-    st.subheader("Cortex Semantic Contract Search")
+    st.subheader("Cortex RAG Contract & Risk Assistant")
     query_text = st.text_input(
         "Ask a supply chain question or search contract penalty terms:", 
-        placeholder="e.g. penalty for late delivery beyond 5 days"
+        placeholder="e.g. What are the financial penalties if Apex Components is delayed by 7 days?"
     )
     
     if query_text:
-        st.info(f"Executing Cortex Hybrid Search for **{persona}** persona...")
+        st.info(f"Retrieving context & synthesizing response for **{persona}** persona...")
         try:
-            # Execute Cortex Search Service Query
+            # 1. Retrieve Context using Cortex Search Service
             search_sql = f"""
                 SELECT SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
                     'SCM.ONT.CONTRACT_SEARCH_INDEX',
-                    '{{"query": "{query_text}", "columns": ["SUPPLIER_NAME", "PENALTY_PCT", "SLA_DAYS", "PENALTY_CLAUSE_TEXT"], "limit": 5}}'
+                    '{{"query": "{query_text}", "columns": ["SUPPLIER_NAME", "PENALTY_PCT", "SLA_DAYS", "PENALTY_CLAUSE_TEXT"], "limit": 3}}'
                 ) AS SEARCH_RESULTS;
             """
             raw_res = session.sql(search_sql).collect()[0]["SEARCH_RESULTS"]
             res_json = json.loads(raw_res)
-            
             results_list = res_json.get("results", [])
+            
             if results_list:
-                st.write(f"### Matched Contract Clauses ({len(results_list)})")
-                res_df = pd.DataFrame(results_list)
-                # Clean up score columns display
-                if "@scores" in res_df.columns:
-                    res_df["Match Score"] = res_df["@scores"].apply(lambda x: round(x.get("reranker_score", 0), 2) if isinstance(x, dict) else 0)
-                    res_df = res_df.drop(columns=["@scores"])
+                context_str = ""
+                for idx, r in enumerate(results_list, 1):
+                    context_str += f"[{idx}] Supplier: {r.get('SUPPLIER_NAME')} | SLA: {r.get('SLA_DAYS')} days | Penalty: {r.get('PENALTY_PCT')}% | Clause: {r.get('PENALTY_CLAUSE_TEXT')}\n"
                 
-                st.dataframe(res_df, use_container_width=True)
+                prompt = f"""
+                You are an expert Supply Chain AI Assistant tailored for a {persona} Manager.
+                Answer the user's question concisely using ONLY the provided contract context below.
+                If the user asks about risk or financial impact, calculate or summarize it based on the terms.
+
+                Context:
+                {context_str}
+
+                Question: {query_text}
+
+                Provide a direct, professional 2-3 sentence summary response first, followed by a bulleted breakdown of relevant facts.
+                """
+
+                clean_prompt = prompt.replace("'", "''")
+                llm_sql = f"SELECT SNOWFLAKE.CORTEX.COMPLETE('mistral-large3', '{clean_prompt}') AS LLM_RESPONSE;"
+                llm_response = session.sql(llm_sql).collect()[0]["LLM_RESPONSE"]
+                
+                st.markdown("### 🤖 Assistant Answer")
+                st.write(llm_response)
+                
+                with st.expander("🔍 View Retrieved Contract Grounding Source"):
+                    res_df = pd.DataFrame(results_list)
+                    if "@scores" in res_df.columns:
+                        res_df = res_df.drop(columns=["@scores"])
+                    st.dataframe(res_df, use_container_width=True)
             else:
-                st.warning("No matching contract terms found.")
+                st.warning("No matching contract context found to answer your query.")
         except Exception as e:
-            st.error(f"Cortex Search Execution Error: {e}")
+            st.error(f"Cortex LLM Execution Error: {e}")
 
 # ---------------------------------------------------------
 # TAB 2: Risk Heatmap & Analytics
@@ -94,13 +115,13 @@ with tab_analytics:
         
         st.markdown("---")
         st.markdown("### Supplier Risk Exposure Ranking")
-        st.bar_chart(data=df_raw, x="ROOT_SUPPLIER_NAME", y="ROW_RISK_SCORE", color="TIER_DEPTH")
+        
+        # Fixed bar_chart call compatible with Snowflake's Streamlit version
+        chart_data = df_raw.set_index("ROOT_SUPPLIER_NAME")[["ROW_RISK_SCORE"]]
+        st.bar_chart(chart_data)
         
         st.markdown(f"### {persona} Data Framing")
-        st.dataframe(
-            df_raw[display_cols].style.background_gradient(subset=["ROW_RISK_SCORE"], cmap="YlOrRd"), 
-            use_container_width=True
-        )
+        st.dataframe(df_raw[display_cols], use_container_width=True)
     else:
         st.info("No risk cascade data available in SCM.ONT.SV_SUPPLY_CHAIN.")
 
