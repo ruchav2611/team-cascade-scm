@@ -1,0 +1,176 @@
+[
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "CONTRACT_SEARCH_BASE",
+        "COLUMN_NAME": "CONTRACT_ID",
+        "DATA_TYPE": "TEXT"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "CONTRACT_SEARCH_BASE",
+        "COLUMN_NAME": "SUPPLIER_ID",
+        "DATA_TYPE": "TEXT"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "CONTRACT_SEARCH_BASE",
+        "COLUMN_NAME": "PENALTY_CLAUSE_TEXT",
+        "DATA_TYPE": "TEXT"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "CONTRACT_SEARCH_BASE",
+        "COLUMN_NAME": "PENALTY_PCT",
+        "DATA_TYPE": "NUMBER"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "CONTRACT_SEARCH_BASE",
+        "COLUMN_NAME": "SLA_DAYS",
+        "DATA_TYPE": "NUMBER"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "DETECTED_RISK_ALERTS",
+        "COLUMN_NAME": "ALERT_ID",
+        "DATA_TYPE": "TEXT"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "DETECTED_RISK_ALERTS",
+        "COLUMN_NAME": "SUPPLIER_ID",
+        "DATA_TYPE": "TEXT"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "DETECTED_RISK_ALERTS",
+        "COLUMN_NAME": "SEVERITY",
+        "DATA_TYPE": "TEXT"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "DETECTED_RISK_ALERTS",
+        "COLUMN_NAME": "RISK_TYPE",
+        "DATA_TYPE": "TEXT"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "DETECTED_RISK_ALERTS",
+        "COLUMN_NAME": "DESCRIPTION",
+        "DATA_TYPE": "TEXT"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "DETECTED_RISK_ALERTS",
+        "COLUMN_NAME": "DETECTED_AT",
+        "DATA_TYPE": "TIMESTAMP_NTZ"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "SV_SUPPLY_CHAIN",
+        "COLUMN_NAME": "ROOT_SUPPLIER_ID",
+        "DATA_TYPE": "TEXT"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "SV_SUPPLY_CHAIN",
+        "COLUMN_NAME": "ROOT_SUPPLIER_NAME",
+        "DATA_TYPE": "TEXT"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "SV_SUPPLY_CHAIN",
+        "COLUMN_NAME": "TIER_DEPTH",
+        "DATA_TYPE": "NUMBER"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "SV_SUPPLY_CHAIN",
+        "COLUMN_NAME": "CONTRACT_ID",
+        "DATA_TYPE": "TEXT"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "SV_SUPPLY_CHAIN",
+        "COLUMN_NAME": "PENALTY_PCT",
+        "DATA_TYPE": "NUMBER"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "SV_SUPPLY_CHAIN",
+        "COLUMN_NAME": "ROW_RISK_SCORE",
+        "DATA_TYPE": "NUMBER"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "SV_SUPPLY_CHAIN",
+        "COLUMN_NAME": "ORDER_ID",
+        "DATA_TYPE": "TEXT"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "SV_SUPPLY_CHAIN",
+        "COLUMN_NAME": "PART_NAME",
+        "DATA_TYPE": "TEXT"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "SV_SUPPLY_CHAIN",
+        "COLUMN_NAME": "PLANT_NAME",
+        "DATA_TYPE": "TEXT"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "SV_SUPPLY_CHAIN",
+        "COLUMN_NAME": "DAYS_TO_IMPACT",
+        "DATA_TYPE": "NUMBER"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "SV_SUPPLY_CHAIN",
+        "COLUMN_NAME": "SHIPMENT_ID",
+        "DATA_TYPE": "TEXT"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "SV_SUPPLY_CHAIN",
+        "COLUMN_NAME": "SHIPMENT_STATUS",
+        "DATA_TYPE": "TEXT"
+    },
+    {
+        "TABLE_SCHEMA": "ONT",
+        "TABLE_NAME": "SV_SUPPLY_CHAIN",
+        "COLUMN_NAME": "IS_ON_TIME",
+        "DATA_TYPE": "BOOLEAN"
+    },
+    {
+        "TABLE_SCHEMA": "RAW",
+        "TABLE_NAME": "CONTRACT",
+        "COLUMN_NAME": "CONTRACT_ID",
+        "DATA_TYPE": "TEXT"
+    },
+    {
+        "TABLE_SCHEMA": "RAW",
+        "TABLE_NAME": "CONTRACT",
+        "COLUMN_NAME": "SUPPLIER_ID",
+        "DATA_TYPE": "TEXT"
+    },
+    {
+        "TABLE_SCHEMA": "RAW",
+        "TABLE_NAME": "CONTRACT",
+        "COLUMN_NAME": "PENALTY_CLAUSE_TEXT",
+        "DATA_TYPE": "TEXT"
+    },
+    {
+        "TABLE_SCHEMA": "RAW",
+        "TABLE_NAME": "CONTRACT",
+        "COLUMN_NAME": "PENALTY_PCT",
+        "DATA_TYPE": "NUMBER"
+    },
+    {
+        "TABLE_SCHEMA": "RAW",
+        "TABLE_NAME": "CONTRACT",
+        "COLUMN_NAME": "SLA_DAYS",
+        "DATA_TYPE": "NUMBER"
+    }
+]

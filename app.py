@@ -1,21 +1,19 @@
 import streamlit as st
 import pandas as pd
+import json
 from snowflake.snowpark.context import get_active_session
 
 st.set_page_config(page_title="Team Cascade — SCM Risk Portal", layout="wide")
 
-# Connect to Snowflake session
 @st.cache_resource
 def init_session():
     return get_active_session()
 
 session = init_session()
 
-# Title Header
 st.title("🛡️ Team Cascade — N-Tier Supply Chain Risk Control")
 st.caption("Governed, ontology-grounded risk detection & multi-tier cascade impact analytics.")
 
-# Persona Selector (Procurement / Planning / Logistics)
 persona = st.sidebar.selectbox(
     "Select Operating Persona",
     ["Procurement", "Planning", "Logistics"],
@@ -25,7 +23,6 @@ persona = st.sidebar.selectbox(
 st.sidebar.markdown("---")
 st.sidebar.markdown(f"**Active Persona:** `{persona}`")
 
-# Main Navigation Tabs
 tab_qa, tab_analytics, tab_alerts = st.tabs([
     "💬 Semantic Assistant & Contract Search", 
     "📊 Risk Heatmap & Cascade Analytics", 
@@ -33,55 +30,62 @@ tab_qa, tab_analytics, tab_alerts = st.tabs([
 ])
 
 # ---------------------------------------------------------
-# TAB 1: Semantic Q&A & Cortex Contract Search
+# TAB 1: Semantic Q&A & Cortex Search
 # ---------------------------------------------------------
 with tab_qa:
-    st.subheader("Semantic Query & Contract Clause Search")
+    st.subheader("Cortex Semantic Contract Search")
     query_text = st.text_input(
-        "Ask a supply chain question or search contract penalties:", 
-        placeholder="e.g. Which delayed suppliers have penalty clauses exceeding 5%?"
+        "Ask a supply chain question or search contract penalty terms:", 
+        placeholder="e.g. penalty for late delivery beyond 5 days"
     )
     
     if query_text:
-        st.info(f"Processing query as **{persona}** persona...")
-        # Cortex Search Query Execution over CONTRACT index
+        st.info(f"Executing Cortex Hybrid Search for **{persona}** persona...")
         try:
-            search_query = f"""
-                SELECT CONTRACT_ID, SUPPLIER_ID, PENALTY_CLAUSE_TEXT, PENALTY_PCT, SLA_DAYS 
-                FROM SCM.RAW.CONTRACT 
-                WHERE PENALTY_CLAUSE_TEXT ILIKE '%{query_text}%' OR SUPPLIER_ID ILIKE '%{query_text}%'
+            # Execute Cortex Search Service Query
+            search_sql = f"""
+                SELECT SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
+                    'SCM.ONT.CONTRACT_SEARCH_INDEX',
+                    '{{"query": "{query_text}", "columns": ["SUPPLIER_NAME", "PENALTY_PCT", "SLA_DAYS", "PENALTY_CLAUSE_TEXT"], "limit": 5}}'
+                ) AS SEARCH_RESULTS;
             """
-            search_df = session.sql(search_query).to_pandas()
-            if not search_df.empty:
-                st.write("### Search Results")
-                st.dataframe(search_df, use_container_width=True)
+            raw_res = session.sql(search_sql).collect()[0]["SEARCH_RESULTS"]
+            res_json = json.loads(raw_res)
+            
+            results_list = res_json.get("results", [])
+            if results_list:
+                st.write(f"### Matched Contract Clauses ({len(results_list)})")
+                res_df = pd.DataFrame(results_list)
+                # Clean up score columns display
+                if "@scores" in res_df.columns:
+                    res_df["Match Score"] = res_df["@scores"].apply(lambda x: round(x.get("reranker_score", 0), 2) if isinstance(x, dict) else 0)
+                    res_df = res_df.drop(columns=["@scores"])
+                
+                st.dataframe(res_df, use_container_width=True)
             else:
-                st.warning("No direct contract clauses matched your query keyword. Querying ontology view...")
+                st.warning("No matching contract terms found.")
         except Exception as e:
-            st.error(f"Search Execution Error: {e}")
+            st.error(f"Cortex Search Execution Error: {e}")
 
 # ---------------------------------------------------------
-# TAB 2: Risk Heatmap & Persona Metrics
+# TAB 2: Risk Heatmap & Analytics
 # ---------------------------------------------------------
 with tab_analytics:
     st.subheader("Multi-Tier Cascade Impact & Risk Heatmap")
     
-    # Load ontology view data
     df_raw = session.sql("SELECT * FROM SCM.ONT.SV_SUPPLY_CHAIN ORDER BY ROW_RISK_SCORE DESC").to_pandas()
     
     if not df_raw.empty:
-        # Persona View Filtering & Emphasis
         if persona == "Procurement":
             st.markdown("##### Persona Focus: *Supplier Exposure & Contract Penalties*")
             display_cols = ["ROOT_SUPPLIER_NAME", "TIER_DEPTH", "ROW_RISK_SCORE", "PENALTY_PCT", "CONTRACT_ID", "PART_NAME"]
         elif persona == "Planning":
             st.markdown("##### Persona Focus: *Order Disruption & Days to Impact*")
             display_cols = ["ORDER_ID", "PLANT_NAME", "DAYS_TO_IMPACT", "ROW_RISK_SCORE", "ROOT_SUPPLIER_NAME", "TIER_DEPTH"]
-        else: # Logistics
+        else:
             st.markdown("##### Persona Focus: *Inbound Shipment Status & Delivery Performance*")
             display_cols = ["SHIPMENT_ID", "SHIPMENT_STATUS", "IS_ON_TIME", "PLANT_NAME", "ROOT_SUPPLIER_NAME", "ROW_RISK_SCORE"]
             
-        # Summary Metrics Row
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Max Risk Score", f"{df_raw['ROW_RISK_SCORE'].max():.1f}")
         col2.metric("At-Risk Orders", len(df_raw['ORDER_ID'].unique()))
@@ -89,12 +93,9 @@ with tab_analytics:
         col4.metric("Avg Days to Impact", f"{df_raw['DAYS_TO_IMPACT'].mean():.1f} Days")
         
         st.markdown("---")
-        
-        # Risk Score Visual Bar Chart
         st.markdown("### Supplier Risk Exposure Ranking")
         st.bar_chart(data=df_raw, x="ROOT_SUPPLIER_NAME", y="ROW_RISK_SCORE", color="TIER_DEPTH")
         
-        # Detailed Table Output
         st.markdown(f"### {persona} Data Framing")
         st.dataframe(
             df_raw[display_cols].style.background_gradient(subset=["ROW_RISK_SCORE"], cmap="YlOrRd"), 
@@ -113,7 +114,6 @@ with tab_alerts:
     alerts_df = session.sql("SELECT ALERT_ID, SEVERITY, RISK_TYPE, DESCRIPTION, DETECTED_AT FROM SCM.ONT.DETECTED_RISK_ALERTS ORDER BY DETECTED_AT DESC").to_pandas()
     
     if not alerts_df.empty:
-        # Severity Badge Highlighting
         for idx, row in alerts_df.iterrows():
             severity = row["SEVERITY"]
             if severity == "CRITICAL":
