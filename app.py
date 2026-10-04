@@ -5,52 +5,77 @@ from snowflake.snowpark.context import get_active_session
 
 st.set_page_config(page_title="Team Cascade Supply Chain Risk Control", layout="wide")
 
-# Custom Enterprise CSS (Logo Navy & Cyan Palette)
+# Custom Enterprise CSS
 st.markdown("""
 <style>
-    /* Primary Background & Text Polish */
-    .main {
-        background-color: #F8FAFC;
+    /* 1. Remove Top Padding */
+    .main .block-container {
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+        max-width: 98% !important;
     }
     
-    /* Top Bar Container */
-    .top-bar {
-        background-color: #0F2C59;
-        padding: 12px 24px;
-        border-radius: 6px;
-        color: #FFFFFF;
-        margin-bottom: 20px;
-    }
-    
-    /* Enterprise Buttons */
-    .stButton>button {
-        background-color: #008DDA;
-        color: #FFFFFF;
-        border: none;
-        border-radius: 4px;
-        font-weight: 600;
-    }
-    .stButton>button:hover {
-        background-color: #006DAA;
-        color: #FFFFFF;
-    }
-    
-    /* Primary Metrics Panel Styling */
-    div[data-testid="stMetricValue"] {
+    /* 2. Smaller Header Styling */
+    .app-header-title {
         color: #0F2C59;
-        font-size: 28px;
-        font-weight: 700;
+        font-size: 22px !important;
+        font-weight: 700 !important;
+        margin-bottom: 2px !important;
+        line-height: 1.2 !important;
+    }
+    .app-header-sub {
+        color: #64748B;
+        font-size: 13px !important;
+        margin-bottom: 0px !important;
     }
     
-    /* Tab Styling */
+    /* 3. Subtle Light-Blue Background for Persona Selector */
+    div[data-testid="stSelectbox"] {
+        background-color: #EBF5FB;
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: 1px solid #D4E6F1;
+    }
+    
+    /* 4. Small, Low-Profile Sign Out Button */
+    .signout-btn button {
+        background-color: transparent !important;
+        color: #64748B !important;
+        border: 1px solid #CBD5E1 !important;
+        border-radius: 4px !important;
+        font-size: 12px !important;
+        font-weight: 500 !important;
+        padding: 2px 8px !important;
+        height: auto !important;
+        margin-top: 4px !important;
+    }
+    .signout-btn button:hover {
+        background-color: #F1F5F9 !important;
+        color: #0F2C59 !important;
+        border-color: #94A3B8 !important;
+    }
+    
+    /* 5. Force Blue Highlights on Sub Tabs (Override Red) */
     button[data-baseweb="tab"] {
-        font-size: 15px;
-        font-weight: 600;
-        color: #475569;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        color: #64748B !important;
+        padding-bottom: 8px !important;
     }
     button[data-baseweb="tab"][aria-selected="true"] {
+        color: #008DDA !important;
+        border-bottom-color: #008DDA !important;
+        border-bottom-width: 3px !important;
+    }
+    div[data-baseweb="tab-highlight"] {
+        background-color: #008DDA !important;
+    }
+
+    /* Metric Card Polish */
+    div[data-testid="stMetricValue"] {
         color: #0F2C59;
-        border-bottom-color: #008DDA;
+        font-size: 24px;
+        font-weight: 700;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -70,14 +95,11 @@ if "persona" not in st.session_state:
     st.session_state.persona = "Procurement"
 
 # ---------------------------------------------------------
-# 1. ENTERPRISE LOGIN SCREEN (TOP CENTERED)
+# 1. ENTERPRISE LOGIN SCREEN
 # ---------------------------------------------------------
 if not st.session_state.authenticated:
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # Header Title
-    st.title("Team Cascade Supply Chain Risk Control")
-    st.caption("Enterprise Risk Detection and Multi-Tier Impact Analysis")
+    st.markdown("<div class='app-header-title'>Team Cascade Supply Chain Risk Control</div>", unsafe_allow_html=True)
+    st.markdown("<div class='app-header-sub'>Enterprise Risk Detection and Multi-Tier Impact Analysis</div>", unsafe_allow_html=True)
     st.markdown("---")
     
     col_left, col_center, col_right = st.columns([1, 2, 1])
@@ -107,7 +129,7 @@ if not st.session_state.authenticated:
     st.stop()
 
 # ---------------------------------------------------------
-# 2. AUTHENTICATED TOP NAVIGATION & PROFILE BAR
+# 2. AUTHENTICATED TOP HEADER BAR
 # ---------------------------------------------------------
 @st.cache_resource
 def init_session():
@@ -115,12 +137,12 @@ def init_session():
 
 session = init_session()
 
-# Top Navigation Bar Layout
-top_col1, top_col2, top_col3 = st.columns([2, 1, 1])
+# Compact Top Header Layout
+top_col1, top_col2, top_col3 = st.columns([2.5, 1.2, 0.8])
 
 with top_col1:
-    st.title("Team Cascade Supply Chain Risk Control")
-    st.caption("Multi-Tier Risk Visibility and Intelligence Platform")
+    st.markdown("<div class='app-header-title'>Team Cascade Supply Chain Risk Control</div>", unsafe_allow_html=True)
+    st.markdown("<div class='app-header-sub'>Multi-Tier Risk Visibility and Intelligence Platform</div>", unsafe_allow_html=True)
 
 with top_col2:
     st.session_state.persona = st.selectbox(
@@ -130,12 +152,14 @@ with top_col2:
     )
 
 with top_col3:
-    st.write("**User:** System Admin (John Smith)")
-    if st.button("Sign Out", use_container_width=True):
+    st.caption("User: **System Admin**")
+    st.markdown('<div class="signout-btn">', unsafe_allow_html=True)
+    if st.button("Sign Out"):
         st.session_state.authenticated = False
         trigger_rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
-st.markdown("---")
+st.markdown("<hr style='margin: 8px 0px 16px 0px; border-color: #E2E8F0;'>", unsafe_allow_html=True)
 
 # Main Navigation Tabs
 tab_qa, tab_analytics, tab_alerts = st.tabs([
