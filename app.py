@@ -5,6 +5,13 @@ from snowflake.snowpark.context import get_active_session
 
 st.set_page_config(page_title="Team Cascade — SCM Risk Portal", layout="wide")
 
+# Helper function for backward-compatible rerun in Streamlit-in-Snowflake
+def trigger_rerun():
+    if hasattr(st, "rerun"):
+        st.rerun()
+    elif hasattr(st, "experimental_rerun"):
+        st.experimental_rerun()
+
 # Initialize Session State for Authentication
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
@@ -26,7 +33,7 @@ if not st.session_state.authenticated:
         if login_btn:
             if username == "admin" and password == "password123":
                 st.session_state.authenticated = True
-                st.rerun()
+                trigger_rerun()
             else:
                 st.error("Invalid credentials. Use 'admin' / 'password123'.")
                 
@@ -50,7 +57,7 @@ def init_session():
 session = init_session()
 
 # Title Header
-st.title("🛡️️ Team Cascade — N-Tier Supply Chain Risk Control")
+st.title("🛡️ Team Cascade — N-Tier Supply Chain Risk Control")
 st.caption("Governed, ontology-grounded risk detection & multi-tier cascade impact analytics.")
 
 # Sidebar Persona Selector & Profile
@@ -68,7 +75,7 @@ st.sidebar.markdown("---")
 
 if st.sidebar.button("🔒 Sign Out", use_container_width=True):
     st.session_state.authenticated = False
-    st.rerun()
+    trigger_rerun()
 
 # Main Navigation Tabs
 tab_qa, tab_analytics, tab_alerts = st.tabs([
