@@ -1,0 +1,41 @@
+name: scm_ontology_semantic_model
+description: Semantic model holding one definition each of four supply chain metrics.
+tables:
+  - name: sv_supply_chain
+    base_table:
+      database: SCM
+      schema: ONT
+      table: SV_SUPPLY_CHAIN
+    dimensions:
+      - name: root_supplier_name
+        expr: ROOT_SUPPLIER_NAME
+        data_type: VARCHAR
+      - name: direct_supplier_name
+        expr: DIRECT_SUPPLIER_NAME
+        data_type: VARCHAR
+      - name: part_name
+        expr: PART_NAME
+        data_type: VARCHAR
+      - name: plant_name
+        expr: PLANT_NAME
+        data_type: VARCHAR
+      - name: tier_depth
+        expr: TIER_DEPTH
+        data_type: NUMBER
+    measures:
+      - name: on_time_delivery
+        description: Percentage of deliveries made on or before scheduled SLA
+        expr: AVG(CASE WHEN IS_ON_TIME = TRUE THEN 1.0 ELSE 0.0 END) * 100
+        data_type: NUMBER
+      - name: fill_rate
+        description: Ratio of fulfilled order demand over total required volume
+        expr: AVG(PATH_CONFIDENCE) * 100
+        data_type: NUMBER
+      - name: days_to_impact
+        description: Days remaining until missing part impacts plant output
+        expr: MIN(DAYS_TO_IMPACT)
+        data_type: NUMBER
+      - name: risk_score
+        description: Overall calculated risk score based on multi-tier confidence and contract penalties
+        expr: AVG(ROW_RISK_SCORE)
+        data_type: NUMBER
